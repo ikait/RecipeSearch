@@ -1,0 +1,19 @@
+$border-color: #e5e5e5;
+
+.container {
+  max-width: 760px;
+}
+
+.header {
+  margin-bottom: 19px;
+  border-bottom: 1px solid $border-color;
+}
+
+.site-title {
+  line-height: 40px;
+}
+
+.footer {
+  padding-top: 19px;
+  border-top: 1px solid $border-color;
+}

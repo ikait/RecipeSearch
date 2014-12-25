@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="packages/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="packages/bootstrap/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="styles/main.css">
+
+    <title>RecipeSearch</title>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills pull-right">
+                <li><a href="/" class="active">Home</a></li>
+                <li><a href="/search">Search</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/test">Test</a></li>
+            </ul>
+        </nav>
+        <h3 class="site-title text-muted">レシピ検索(仮)</h3>
+    </div>
+
+    <div id="home">
+        <div class="jumbotron">
+            <h1>レシピ検索(仮)</h1>
+            <p class="lead">
+                Linked Open Dataを使って、レシピを検索します。
+            </p>
+            <p>
+                <a class="btn btn-lg btn-primary" href="/search">はじめる</a>
+            </p>
+        </div>
+        <div class="row">
+
+        </div>
+    </div>
+
+    <div id="search">
+        <h3>検索をはじめる</h3>
+
+    </div>
+
+    <div id="about">
+        <h3>このサイトについて</h3>
+        <p></p>
+    </div>
+
+    <div id="test">
+        <h3>test</h3>
+
+        <textarea id="test-form-textarea" class="form-control" rows="3"></textarea>
+        <input id="test-form-submit" class="btn btn-default" type="submit" />
+        
+        <div style="border: 1px solid #e5e5e5; padding: 20px; margin: 20px 0;">
+            Results are displayed here.
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 萩野服部研2014年度秋学期 LOD黄色班</p>
+    </footer>
+</div>
+
+<script type="application/dart" src="main.dart"></script>
+<script data-pub-inline src="packages/browser/dart.js"></script>
+<!-- <script src="packages/bootstrap/js/bootstrap.js"></script> -->
+</body>
+</html>
