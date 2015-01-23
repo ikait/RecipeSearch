@@ -1,5 +1,6 @@
 import 'package:route_hierarchical/client.dart';
 import 'dart:html';
+import 'dart:convert';  // jsonパース用
 
 /**
  *
@@ -7,50 +8,104 @@ import 'dart:html';
 void main() {
   router();
 
+  /* 
+   * これまで、C とか Java で、上の行から順次実行していくプログラムを書いてきたと思います。
+   * 今回は(インターフェイスの開発では)、必ずしも上から順に実行されなくて、「あるイベント」
+   * の処理内容を書いていくことが多くなると思います。
+   * これを「イベント駆動型プログラミング」といいます。
+   * 
+   * JavaScript とか Dart でも、よく「イベント駆動」でコードを書きます。なぜかというと、
+   * ページが開いた瞬間、JSやDartが読み込まれた瞬間から何か処理をはじめることもありますけど、
+   * ボタンがクリックされた時、とか、フォームに文字が入力された時、のような「あるイベント」が
+   * 起きた時に何か処理が行われるということも多いからです。
+   * 
+   * 以下に、querySelector("#test-form-submit").onClick.listen() がありますが、
+   * これが意味する所は、Dart が読み込まれたときに「#test-form-submit がクリックされる
+   * のを監視してください、クリックされたら引数で渡した関数の処理を実行して下さい」という
+   * 処理を実行(予約?)しているということです。
+   * 
+   * onClickの他にもイベントはたくさんあります。
+   * https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:html.Element#id_onClick
+   * 
+   * listen() が具体的にどんな引数をとるのかは以下を参照して下さい。
+   * https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:html.ElementStream#id_listen
+   *  
+   */
   querySelector('#test-form-submit').onClick.listen((e) {
-    var query = querySelector('#test-form-textarea').value;
-    receiveData();
-  });
-
-  var query = """
-    PREFIX rcp: <http://www.tom.sfc.keio.ac.jp/recipeLod/class/>
-    PREFIX rcpProp: <http://www.tom.sfc.keio.ac.jp/recipeLod/property/>
-
-    SELECT * {
-        ?s a rcp:Food ;
-        rdfs:label ?label .
-    }
-  """;
-
-  receiveData(uriWithQuery(query), (HttpRequest response) {  // onComplete
-    window.console.dir(response);
-  }, onError: (HttpRequest response) {  // onError
-    window.console.dir(response);
-  }, onTimeout: () {  // onTimeout
-
+ 
+    // クエリーを入力する textarea を捕捉
+    TextAreaElement textarea = querySelector('#test-form-textarea');
+    
+    // 結果を表示する element を捕捉
+    Element resultElement = querySelector("#test-results"); 
+    
+    // textarea の値を取得
+    String query = textarea.value;
+    
+    // jsonで受け取るように設定
+    String format = "application/sparql-results+json";
+    
+    window.console.log("Start receiving!!");
+    resultElement.innerHtml = "Loading...";
+ 
+    /* uriWithQuery()は、queryからuriを組み立てる関数。下の方で宣言しています。
+     * (HttpRequest response) {} は、引数にHttpRequestクラスの変数をとる無名関数です。。
+     * 以下では、成功時、エラー時、タイムアウト時の3つの無名関数を渡してます。
+     * 
+     * それぞれ、他のところで
+     *  
+     * void onSuccess(HttpRequest response) { 
+     *   // 成功時の処理
+     * }
+     * 
+     * というように別に宣言してもいいけれど、
+     * ここ以外で使わないので無名関数として直接宣言してみます。
+     * 
+     * ちなみに、responseがどんなプロパティを持っているかはレファレンスに書いてあります↓
+     * https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:html.HttpRequest#id_responseText
+     */
+    receiveData(uriWithQuery(query, format: format), (HttpRequest response) {        
+      // 通信成功して何か受け取った時 (結果は空かもしれない)
+      
+      if (!response.responseText.isEmpty) {  // responseTextがあれば
+        String jsonString = response.responseText; 
+        Map data = JSON.decode(jsonString);  // jsonをデコードして、Dartで扱えるように
+        
+        // とりあえず、value を全部表示してみる
+        querySelector("#test-results").text = "";  // 一旦空白にして
+        for (Map binding in data["results"]["bindings"]) {
+          String label = binding["label"]["value"];          
+          resultElement.innerHtml += label + "<br>";          
+        }
+      }
+    }, onError: () {
+      
+    }, onTimeout: () {
+      
+    });
   });
 }
 
 /**
- * queryを引数にとり、Uriオブジェクトを返す
+ * queryなどを引数にとり、Uriオブジェクトを返す
  * sparql endpoint に request する準備済
  *
  * @param query Endpointに投げるquery
  * @returns Uri queryを含めて組み立てられたUriオブジェクト
  */
-Uri uriWithQuery(String query) {
-  return new Uri.http("lod.jxj.jp", "/sparql", {
+Uri uriWithQuery(String query, {String format: "text/html", String uri: "lod.jxj.jp"}) {
+  return new Uri.http(uri, "/sparql", {
       "default-graph-uri": "",
       "query": query,
       "should-sponge": "",
-      "format": "text/html",
+      "format": format,
       "timeout": "0",
       "debug": "on"
   });
 }
 
 /**
- * データを受信して指定した処理を行う
+ * データを受信して指定した処理を行うラッパーメソッド。
  *
  * @param onComplete 成功時に行う処理。引数にはHttpRequestが渡される
  * @param onError エラー時に行う処理。引数にはHttpRequestが渡される
@@ -58,6 +113,7 @@ Uri uriWithQuery(String query) {
  */
 void receiveData(Uri uri, Function onComplete, {Function onError, Function onTimeout}) {
   window.console.dir(uri);
+   
   HttpRequest.request(uri.toString(), onProgress: (ProgressEvent e) {
 
   }).then((HttpRequest response) {
@@ -65,17 +121,16 @@ void receiveData(Uri uri, Function onComplete, {Function onError, Function onTim
     // processes if success
     onComplete(response);
 
-  }).catchError((HttpRequest response) {
+  }).catchError(() {
 
     // processes if error
-    if (onError) {
-      onError(response);
-    }
+    onError();
+    window.console.error("error");
 
   }).timeout(new Duration(minutes: 1), onTimeout: () {
 
     // processes if timeout
-    if (onTimeout) {
+    if (onTimeout != null) {
       onTimeout();
     }
 
@@ -112,8 +167,8 @@ void showPage(String selector) {
       '#test'
   ];
   for (var i = 0, length = pages.length; i < length; i += 1) {
-    var s = querySelector(pages[i]).style.display = 'none';
-    if (s) {
+    var s = querySelector(pages[i]);
+    if (s != null) {
       s.style.display = 'none';
     }
   }

@@ -43,7 +43,37 @@
 
     <div id="search">
         <h3>検索をはじめる</h3>
-
+        <h4>1. 年齢、性別を入力</h4>
+        <form class="form-inline">
+          <div class="form-group">
+            <label>年齢:</label>
+            <select id="search-age" name="search-age" class="form-control">
+              <option value="10">10〜19歳</option>
+              <option value="20">20〜29歳</option>
+              <option value="30">30〜39歳</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>性別:</label>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="search-sex" value="male">
+                男
+              </label>
+            </div>
+            <div class="radio-inline">
+              <label>
+                <input type="radio" name="search-sex" value="female">
+                女
+              </label>
+            </div>
+          </div>
+        </form>
+          
+        
+        <h4>2. レシピを入力</h4>
+        <hr>
+        <h4>あなたに必要なレシピは!</h4>
     </div>
 
     <div id="about">
@@ -54,10 +84,18 @@
     <div id="test">
         <h3>test</h3>
 
-        <textarea id="test-form-textarea" class="form-control" rows="3"></textarea>
+        <textarea id="test-form-textarea" class="form-control" rows="6">
+PREFIX rcp: <http://www.tom.sfc.keio.ac.jp/recipeLod/class/>
+PREFIX rcpProp: <http://www.tom.sfc.keio.ac.jp/recipeLod/property/>
+
+SELECT * {
+  ?s a rcp:Food ;
+    rdfs:label ?label .
+}
+</textarea>
         <input id="test-form-submit" class="btn btn-default" type="submit" />
         
-        <div style="border: 1px solid #e5e5e5; padding: 20px; margin: 20px 0;">
+        <div id="test-results" style="border: 1px solid #e5e5e5; padding: 20px; margin: 20px 0;">
             Results are displayed here.
         </div>
     </div>
